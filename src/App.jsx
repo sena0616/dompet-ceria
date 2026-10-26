@@ -97,17 +97,38 @@ function App() {
   function saveTransaction(e) {
     e.preventDefault();
     const amount = Number(transactionForm.amount);
+
     if (!transactionForm.name.trim() || !Number.isFinite(amount) || amount <= 0 || !transactionForm.date) {
-      setNotice("Isi nama, tanggal, dan jumlah yang valid dulu, ya."); return;
+      setNotice("Isi nama, tanggal, dan jumlah yang valid dulu, ya.");
+      return;
     }
+
+    const transactionsWithoutCurrent = editing
+      ? transactions.filter(t => t.id !== editing)
+      : transactions;
+
+    const availableBalance = Number(startingBalance)
+      + transactionsWithoutCurrent
+          .filter(t => t.type === "income")
+          .reduce((sum, t) => sum + Number(t.amount), 0)
+      - transactionsWithoutCurrent
+          .filter(t => t.type === "expense")
+          .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    if (transactionForm.type === "expense" && amount > Math.max(0, availableBalance)) {
+      setNotice("Saldo tidak cukup! Saldo tersedia " + money(Math.max(0, availableBalance)) + ".");
+      return;
+    }
+
     if (editing) {
       setTransactions(list => list.map(t => t.id === editing ? { ...transactionForm, amount, id: editing } : t));
-      setNotice("Transaksi berhasil diperbarui ✨");
+      setNotice("Transaksi berhasil diperbarui \u2728");
     } else {
       setTransactions(list => [{ ...transactionForm, amount, id: Date.now() }, ...list]);
       setXp(x => x + 10);
-      setNotice("Transaksi tersimpan! Kamu mendapat 10 XP ⭐");
+      setNotice("Transaksi tersimpan! Kamu mendapat 10 XP \u2B50");
     }
+
     setShowTransaction(false);
   }
   function editTransaction(t) {
@@ -237,7 +258,7 @@ function App() {
       <footer className="app-footer"><span>🐾</span> Dompet Ceria · Teman kecil untuk keputusan keuangan yang lebih sadar <span>♡</span></footer>
     </main>
 
-    {showTransaction && <Modal title={editing?"Edit transaksi":"Catat transaksi baru"} onClose={()=>setShowTransaction(false)}><form className="modal-form" onSubmit={saveTransaction}><div className="type-switch"><button type="button" className={transactionForm.type==="expense"?"expense-active":""} onClick={()=>changeType("expense")}><TrendingDown size={16}/> Pengeluaran</button><button type="button" className={transactionForm.type==="income"?"income-active":""} onClick={()=>changeType("income")}><TrendingUp size={16}/> Pemasukan</button></div><label>Nama transaksi<input autoFocus value={transactionForm.name} onChange={e=>setTransactionForm(f=>({...f,name:e.target.value}))} placeholder="Contoh: makan siang" required/></label><label>Jumlah (Rp)<input type="number" min="1" value={transactionForm.amount} onChange={e=>setTransactionForm(f=>({...f,amount:e.target.value}))} placeholder="Contoh: 15000" required/></label><label>Kategori<select value={transactionForm.category} onChange={e=>setTransactionForm(f=>({...f,category:e.target.value}))}>{(transactionForm.type==="income"?incomeCategories:expenseCategories).map(c=><option key={c}>{c}</option>)}</select></label><label>Tanggal<input type="date" value={transactionForm.date} onChange={e=>setTransactionForm(f=>({...f,date:e.target.value}))} required/></label><button className="primary-btn full-btn" type="submit">{editing?"Simpan perubahan":"Simpan transaksi"}</button></form></Modal>}
+    {showTransaction && <Modal title={editing?"Edit transaksi":"Catat transaksi baru"} onClose={()=>setShowTransaction(false)}><form className="modal-form" onSubmit={saveTransaction}><div className="type-switch"><button type="button" className={transactionForm.type==="expense"?"expense-active":""} onClick={()=>changeType("expense")}><TrendingDown size={16}/> Pengeluaran</button><button type="button" className={transactionForm.type==="income"?"income-active":""} onClick={()=>changeType("income")}><TrendingUp size={16}/> Pemasukan</button></div><label>Nama transaksi<input autoFocus value={transactionForm.name} onChange={e=>setTransactionForm(f=>({...f,name:e.target.value}))} placeholder="Contoh: makan siang" required/></label><label>Jumlah (Rp)<input type="number" min="1" value={transactionForm.amount} onChange={e=>setTransactionForm(f=>({...f,amount:e.target.value.replace(/-/g,"")}))} placeholder="Contoh: 15000" required/></label><label>Kategori<select value={transactionForm.category} onChange={e=>setTransactionForm(f=>({...f,category:e.target.value}))}>{(transactionForm.type==="income"?incomeCategories:expenseCategories).map(c=><option key={c}>{c}</option>)}</select></label><label>Tanggal<input type="date" value={transactionForm.date} onChange={e=>setTransactionForm(f=>({...f,date:e.target.value}))} required/></label><button className="primary-btn full-btn" type="submit">{editing?"Simpan perubahan":"Simpan transaksi"}</button></form></Modal>}
     {showReminder && <Modal title="Cek sebelum checkout 🛒" onClose={()=>setShowReminder(false)}><form className="modal-form" onSubmit={checkPurchase}><p className="modal-intro">Jeda sebentar. Kita cek dulu apakah belanja ini sesuai rencana.</p><label>Barang yang ingin dibeli<input autoFocus value={reminderForm.name} onChange={e=>setReminderForm(f=>({...f,name:e.target.value}))} placeholder="Contoh: tumbler lucu" required/></label><label>Harga (Rp)<input type="number" min="1" value={reminderForm.amount} onChange={e=>setReminderForm(f=>({...f,amount:e.target.value}))} placeholder="Contoh: 45000" required/></label><label>Kategori<select value={reminderForm.category} onChange={e=>setReminderForm(f=>({...f,category:e.target.value}))}>{expenseCategories.map(c=><option key={c}>{c}</option>)}</select></label><div className="modal-budget">Anggaran tersisa hari ini <b>{money(Math.max(0,remaining))}</b></div><button className="primary-btn full-btn" type="submit">Periksa & simpan keinginan</button></form></Modal>}
     {showWish && <Modal title="Tambah daftar keinginan 💗" onClose={()=>setShowWish(false)}><form className="modal-form" onSubmit={saveWish}><p className="modal-intro">Simpan dulu, beri jeda 24 jam sebelum memutuskan membeli.</p><label>Nama barang<input autoFocus value={wishForm.name} onChange={e=>setWishForm(f=>({...f,name:e.target.value}))} placeholder="Apa yang kamu inginkan?" required/></label><label>Perkiraan harga (Rp)<input type="number" min="1" value={wishForm.amount} onChange={e=>setWishForm(f=>({...f,amount:e.target.value}))} placeholder="Contoh: 75000" required/></label><button className="primary-btn full-btn" type="submit">Simpan ke wishlist</button></form></Modal>}
   </div>;

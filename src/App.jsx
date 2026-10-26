@@ -180,7 +180,7 @@ function App() {
           ["Dashboard", House], ["Transaksi", ArrowLeftRight], ["Laporan", ChartNoAxesColumn],
           ["Rem Belanja", ShieldCheck], ["Daftar Keinginan", Heart], ["Target Tabungan", Target]
         ].map(([label,Icon]) => <button key={label} className={`nav-item ${active===label?"active":""}`} onClick={() => setActive(label)}><Icon size={18}/><span>{label}</span>{label==="Rem Belanja" && <span className="nav-dot"/>}</button>)}
-      </nav>
+      <button className={`nav-item nav-mobile-only ${active==="Pengaturan"?"active":""}`} onClick={() => setActive("Pengaturan")}><Settings size={18}/><span>Pengaturan</span></button></nav>
       <div className="sidebar-bottom"><div className="mascot-card"><div className="mascot-spark">✦</div><b>Pelan-pelan asal konsisten!</b><p>Setiap keputusan kecil bisa bikin tabunganmu tumbuh.</p><div className="mascot-stars">✦ ✧ ✦</div></div><button className="nav-item settings" onClick={() => setActive("Pengaturan")}><Settings size={18}/>Pengaturan</button><div className="sidebar-footer">Made with ♡ for your future</div></div>
     </aside>
 

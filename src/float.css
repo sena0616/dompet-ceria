@@ -162,3 +162,5 @@ body::after {
   bottom: -120px; right: 6%;
   animation: drift-b 20s ease-in-out infinite;
 }
+.nav-item.nav-mobile-only{display:none}
+@media (max-width:760px){.nav-item.nav-mobile-only{display:flex}}

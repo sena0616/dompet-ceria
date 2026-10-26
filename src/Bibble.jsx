@@ -4,14 +4,32 @@ export default function Bibble() {
   const [look, setLook] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const move = (event) => {
-      const x = (event.clientX / window.innerWidth - 0.5) * 10;
-      const y = (event.clientY / window.innerHeight - 0.5) * 8;
+    const lookAt = (clientX, clientY) => {
+      const x = (clientX / window.innerWidth - 0.5) * 10;
+      const y = (clientY / window.innerHeight - 0.5) * 8;
       setLook({ x, y });
     };
 
-    window.addEventListener("mousemove", move);
-    return () => window.removeEventListener("mousemove", move);
+    // Mouse, pena, dan jari yang menekan layar
+    const onPointer = (event) => lookAt(event.clientX, event.clientY);
+
+    // Jari yang menggeser layar (scroll): di HP, pointermove berhenti saat
+    // halaman mulai bergulir, jadi kita pakai event sentuhan juga.
+    const onTouch = (event) => {
+      const touch = event.touches[0];
+      if (touch) lookAt(touch.clientX, touch.clientY);
+    };
+
+    window.addEventListener("pointermove", onPointer);
+    window.addEventListener("pointerdown", onPointer);
+    window.addEventListener("touchstart", onTouch, { passive: true });
+    window.addEventListener("touchmove", onTouch, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("pointerdown", onPointer);
+      window.removeEventListener("touchstart", onTouch);
+      window.removeEventListener("touchmove", onTouch);
+    };
   }, []);
 
   return (

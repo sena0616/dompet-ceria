@@ -1,0 +1,51 @@
+﻿import { useEffect, useState } from "react";
+
+export default function Bibble() {
+  const [look, setLook] = useState({ x: 0, y: 0 });
+  const [blink, setBlink] = useState(false);
+
+  useEffect(() => {
+    const move = (event) => {
+      const x = (event.clientX / window.innerWidth - 0.5) * 7;
+      const y = (event.clientY / window.innerHeight - 0.5) * 5;
+      setLook({ x, y });
+    };
+
+    let blinkTimer;
+    const blinkLoop = () => {
+      blinkTimer = setTimeout(() => {
+        setBlink(true);
+        setTimeout(() => setBlink(false), 160);
+        blinkLoop();
+      }, 2500 + Math.random() * 2500);
+    };
+
+    window.addEventListener("mousemove", move);
+    blinkLoop();
+
+    return () => {
+      window.removeEventListener("mousemove", move);
+      clearTimeout(blinkTimer);
+    };
+  }, []);
+
+  return (
+    <div className="bibble-pet" title="Hai! Aku Bibble 💙">
+      <div className="bibble-ear left" />
+      <div className="bibble-ear right" />
+      <div className="bibble-body">
+        <div className="bibble-tuft">✦</div>
+        <div className={`bibble-eye ${blink ? "blink" : ""}`}>
+          <span style={{ transform: `translate(${look.x}px, ${look.y}px)` }} />
+        </div>
+        <div className={`bibble-eye ${blink ? "blink" : ""}`}>
+          <span style={{ transform: `translate(${look.x}px, ${look.y}px)` }} />
+        </div>
+        <div className="bibble-mouth">ᴗ</div>
+        <div className="bibble-cheek left" />
+        <div className="bibble-cheek right" />
+      </div>
+      <div className="bibble-caption">Bibble si penjaga tabungan ✨</div>
+    </div>
+  );
+}

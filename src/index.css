@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Nunito', sans-serif;
+  color: #302b3b;
+  background: #fff8ef;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --ink: #302b3b;
+  --muted: #8b8496;
+  --cream: #fff8ef;
+  --paper: #ffffff;
+  --pink: #ffb8c8;
+  --peach: #ffcfaa;
+  --yellow: #ffe48a;
+  --mint: #bcebd6;
+  --lavender: #d8c9ff;
+  --purple: #7655c9;
+  --green: #287d61;
+  --red: #d95d69;
+  --line: #f0e8e2;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #b9a2ff; outline-offset: 2px; }

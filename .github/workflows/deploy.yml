@@ -1,0 +1,43 @@
+name: Deploy ke GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Ambil kode
+        uses: actions/checkout@v7
+      - name: Pasang Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+      - name: Install dependency
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Siapkan Pages
+        uses: actions/configure-pages@v6
+      - name: Upload hasil build
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ./dist
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

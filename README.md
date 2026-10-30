@@ -93,5 +93,5 @@ npm run lint     # Memeriksa kualitas kode
 </p>
 
 <p align="center">
-  **Dompet Ceria — Small Steps, Better Finances.**
+  Dompet Ceria — Small Steps, Better Finances.
 </p>

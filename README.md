@@ -34,7 +34,7 @@ Dengan konsep tampilan yang bersih serta sentuhan warna ungu, Dompet Ceria diran
 
 ## 🚀 Menjalankan Proyek
 
-Ikuti langkah berikut untuk menjalankan Dompet Ceria di komputer lokal.
+Ikuti langkah berikut ya untuk menjalankan Dompet Ceria di komputer lokal.
 
 **1. Clone repository**
 ```bash

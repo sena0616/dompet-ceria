@@ -37,14 +37,14 @@ const css = `
 .bibble-live .bibble-eye.squint { transform: scaleY(0.2); }
 .bibble-live .bibble-eye.happy {
   height: 24px; top: 24px; background: transparent;
-  border-color: transparent; border-top-color: #49356e; border-width: 5px;
+  border-color: transparent; border-top-color: var(--k-49356e); border-width: 5px;
 }
 .bibble-live .bibble-eye.happy span { opacity: 0; }
 
 /* alis */
 .bibble-live .bibble-brow {
   position: absolute; top: 0; width: 32px; height: 5px; border-radius: 5px;
-  background: #49356e; opacity: 0;
+  background: var(--k-49356e); opacity: 0;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .bibble-live .brow-left  { left: 53px; }
@@ -57,28 +57,28 @@ const css = `
 /* mulut */
 .bibble-live .bibble-mouth { transition: all 0.2s ease; }
 .bibble-live .bibble-mouth.m-sad {
-  border-bottom: 0; border-top: 3px solid #49356e; top: 73px; height: 9px;
+  border-bottom: 0; border-top: 3px solid var(--k-49356e); top: 73px; height: 9px;
 }
 .bibble-live .bibble-mouth.m-hurt {
   width: 24px; height: 22px; left: calc(50% - 12px); top: 64px;
-  border: 3px solid #49356e; border-radius: 50% 50% 45% 45%; background: #e0577f;
+  border: 3px solid var(--k-49356e); border-radius: 50% 50% 45% 45%; background: var(--k-e0577f);
   animation: bibble-wail 0.3s ease-in-out infinite alternate;
 }
 .bibble-live .bibble-mouth.m-happy {
   width: 30px; height: 16px; left: calc(50% - 15px); top: 66px;
-  border: 3px solid #49356e; border-top: 0; border-radius: 0 0 30px 30px; background: #ff8fb0;
+  border: 3px solid var(--k-49356e); border-top: 0; border-radius: 0 0 30px 30px; background: var(--k-ff8fb0);
 }
 
 /* pipi */
 .bibble-live .bibble-cheek { transition: transform 0.25s ease, background 0.25s ease; }
 .mood-happy .bibble-live .bibble-cheek { transform: scale(1.35); }
-.mood-hurt .bibble-live .bibble-cheek  { background: #ff5f8f; transform: scale(1.2); }
+.mood-hurt .bibble-live .bibble-cheek  { background: var(--k-ff5f8f); transform: scale(1.2); }
 
 /* air mata */
 .bibble-live .bibble-tear {
   position: absolute; top: 58px; width: 10px; height: 14px; opacity: 0;
   border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  background: #9be7ff; border: 1.5px solid #5cc3ee; pointer-events: none;
+  background: var(--k-9be7ff); border: 1.5px solid var(--k-5cc3ee); pointer-events: none;
   animation: bibble-tear 1.5s ease-in infinite;
 }
 .bibble-live .tear-l1 { left: 62px; }
@@ -107,12 +107,12 @@ const css = `
   align-items: center; gap: 6px; text-align: center; padding: 0 10px;
 }
 .bibble-bubble {
-  background: #fff; border: 2px solid #e5dcf7; color: #5a536d;
+  background: var(--k-fff); border: 2px solid var(--k-e5dcf7); color: var(--k-5a536d);
   font-size: 12px; font-weight: 800; padding: 7px 14px; border-radius: 16px;
-  box-shadow: 0 3px 0 #eee5f7; max-width: 100%;
+  box-shadow: 0 3px 0 var(--k-eee5f7); max-width: 100%;
   animation: bibble-bubble 0.4s cubic-bezier(.34, 1.56, .64, 1);
 }
-.bibble-hint { font-size: 10px; font-weight: 700; color: #a59cb5; }
+.bibble-hint { font-size: 10px; font-weight: 700; color: var(--k-a59cb5); }
 
 @keyframes bibble-jump {
   0%   { transform: translateY(0) scale(1, 1); }

@@ -1,7 +1,7 @@
 # 💜 Dompet Ceria
 
 <p align="center">
-  Kelola Keuangan, Wujudkan Impian!
+  Kelola Keuangan, Wujudkan Impian!hihi
   
 </p>
 

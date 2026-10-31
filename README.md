@@ -2,6 +2,7 @@
 
 <p align="center">
   Kelola Keuangan, Wujudkan Impian!
+  DAMN BROW
 </p>
 
 <p align="center">

@@ -2,7 +2,7 @@
 
 <p align="center">
   Kelola Keuangan, Wujudkan Impian!
-  DAMN BROww
+  
 </p>
 
 <p align="center">

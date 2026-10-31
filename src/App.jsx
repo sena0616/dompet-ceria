@@ -4,7 +4,7 @@ import {
   Settings, Plus, Wallet, TrendingUp, TrendingDown, Sparkles,
   Cat, Trash2, Pencil, X, Search, CheckCircle2,
   Clock, Trophy, PiggyBank, ShieldCheck, Coins, CalendarDays,
-  AlertTriangle, Heart, ChevronRight
+  AlertTriangle, Heart, ChevronRight, Palette, Sun, Moon
 } from "lucide-react";
 import Bibble from "./Bibble";
 import "./App.css";
@@ -42,6 +42,13 @@ function App() {
   const [reminderForm, setReminderForm] = useState({ name: "", amount: "", category: "Belanja Online" });
   const [wishForm, setWishForm] = useState({ name: "", amount: "" });
   const [deposit, setDeposit] = useState("");
+  const [theme, setTheme] = useState(() => read("dc-theme", "dark"));
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("dc-theme", JSON.stringify(theme));
+  }, [theme]);
+
 
   useEffect(() => localStorage.setItem("dc-transactions", JSON.stringify(transactions)), [transactions]);
   useEffect(() => localStorage.setItem("dc-starting-balance", JSON.stringify(startingBalance)), [startingBalance]);
@@ -236,6 +243,16 @@ function App() {
       {active === "Target Tabungan" && <section className="panel page-panel savings-page"><div className="savings-hero"><div className="savings-hero-art">🐷<span>🪙</span></div><div><div className="eyebrow dark">SMALL STEPS, BIG DREAMS</div><h2>Tabungan impianmu</h2><p>Tetapkan tujuan yang realistis dan isi sedikit demi sedikit.</p></div></div><div className="goal-progress-card"><div className="goal-top"><div><span>Total terkumpul</span><h2>{money(saved)}</h2></div><div className="goal-percent">{goal>0?Math.min(100,Math.round(saved/goal*100)):0}%</div></div><div className="progress-track big"><div className="goal-fill" style={{width:`${goal>0?Math.min(100,saved/goal*100):0}%`}}/></div><div className="goal-meta"><span>Mulai dari langkah kecil 🌱</span><b>Target {money(goal)}</b></div></div><div className="savings-forms"><form className="mini-form" onSubmit={addSavings}><h3><PiggyBank size={19}/> Tambah tabungan</h3><label>Jumlah setoran (Rp)<input type="number" min="1" value={deposit} onChange={e=>setDeposit(e.target.value)} placeholder="Contoh: 10000" required/></label><button className="primary-btn" type="submit">Simpan setoran</button><small>Setoran dicatat terpisah dari transaksi. Catat juga pengeluaran nyata agar saldo tetap akurat.</small></form><form className="mini-form" onSubmit={e=>{e.preventDefault();setGoal(Math.max(0,Number(e.currentTarget.goal.value)));setNotice("Target tabungan diperbarui!");}}><h3><Target size={19}/> Ubah target</h3><label>Target tabungan (Rp)<input name="goal" type="number" min="0" defaultValue={goal} required/></label><button className="secondary-btn" type="submit">Perbarui target</button></form></div></section>}
 
       {active === "Pengaturan" && <section className="panel page-panel"><div className="panel-heading"><div><h2>Pengaturan ⚙️</h2><p>Sesuaikan rencana keuangan dengan kebutuhanmu.</p></div></div><div className="settings-grid">
+        <div className="mini-form">
+          <h3><Palette size={19} /> Tema Tampilan</h3>
+          <p>Pilih tampilan yang nyaman untuk aplikasi Dompet Ceria.</p>
+          <div className="theme-switch">
+            <button type="button" className={theme === "light" ? "primary-btn" : "secondary-btn"} onClick={() => setTheme("light")}><Sun size={16} /> Light Mode</button>
+            <button type="button" className={theme === "dark" ? "primary-btn" : "secondary-btn"} onClick={() => setTheme("dark")}><Moon size={16} /> Dark Mode</button>
+          </div>
+          <small>Tema aktif: {theme === "dark" ? "Dark Mode" : "Light Mode"}</small>
+        </div>
+
         <form className="mini-form" onSubmit={e => {
           e.preventDefault();
           const value = Number(e.currentTarget.startingBalance.value);

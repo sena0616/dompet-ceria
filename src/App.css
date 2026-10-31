@@ -1331,3 +1331,16 @@ textarea:focus {
 :root[data-theme="dark"] .level-progress > small {
   color: #b9aecb;
 }
+
+/* Theme Switch */
+.theme-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.theme-switch button {
+  flex: 1;
+  min-width: 120px;
+  cursor: pointer;
+}

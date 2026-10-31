@@ -26,3 +26,30 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #b9a2ff; outline-offset: 2px; }
+
+
+/* TEMA GELAP KEUNGUAN - WARNA DASAR */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  color: #eee8fa;
+  background: #211a2e;
+
+  --ink: #eee8fa;
+  --muted: #b9aecb;
+  --cream: #292037;
+  --paper: #352a47;
+  --pink: #9e668b;
+  --peach: #a87969;
+  --yellow: #c6a75c;
+  --mint: #527f70;
+  --lavender: #746394;
+  --purple: #a78bfa;
+  --green: #65bd98;
+  --red: #e87983;
+  --line: #51435f;
+}
+
+:root[data-theme="dark"] body {
+  background: #211a2e;
+  color: #eee8fa;
+}

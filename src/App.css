@@ -908,3 +908,426 @@ textarea:focus {
     margin-bottom: -28px;
   }
 }
+
+/* ===== PR 2: TEMA GELAP KEUNGUAN ===== */
+:root[data-theme="dark"] .app-layout {
+  background: #211a2e;
+  color: #eee8fa;
+}
+
+:root[data-theme="dark"] .sidebar,
+:root[data-theme="dark"] .budget-card,
+:root[data-theme="dark"] .stat-card,
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .date-chip {
+  background: #30263f;
+  color: #eee8fa;
+  border-color: #51435f;
+}
+
+:root[data-theme="dark"] .mini-profile,
+:root[data-theme="dark"] .level-progress,
+:root[data-theme="dark"] .period-tabs {
+  background: #392e4b;
+  border-color: #51435f;
+}
+
+:root[data-theme="dark"] .nav-item {
+  color: #c5b8d8;
+}
+
+:root[data-theme="dark"] .nav-item:hover,
+:root[data-theme="dark"] .nav-item.active {
+  background: #49385f;
+  color: #d6c5ff;
+}
+
+:root[data-theme="dark"] .subheading,
+:root[data-theme="dark"] .stat-label,
+:root[data-theme="dark"] .stat-foot,
+:root[data-theme="dark"] .budget-caption,
+:root[data-theme="dark"] .budget-amount span,
+:root[data-theme="dark"] .empty-state,
+:root[data-theme="dark"] .breadcrumb {
+  color: #b9aecb;
+}
+
+:root[data-theme="dark"] .secondary-btn,
+:root[data-theme="dark"] .notice {
+  background: #49385f;
+  color: #e0d4ff;
+  border-color: #665282;
+}
+
+:root[data-theme="dark"] .search-box,
+:root[data-theme="dark"] .search-box input {
+  background: #30263f;
+  color: #eee8fa;
+  border-color: #51435f;
+}
+
+:root[data-theme="dark"] .report-summary > div {
+  background: #392e4b;
+  border-color: #51435f;
+}
+
+:root[data-theme="dark"] .table-total {
+  border-color: #51435f;
+  color: #c5b8d8;
+}
+
+:root[data-theme="dark"] .progress-track,
+:root[data-theme="dark"] .leak-bar {
+  background: #493e58;
+}
+
+:root[data-theme="dark"] .budget-tip {
+  background: #29483f;
+  color: #a9e5c9;
+}
+
+:root[data-theme="dark"] .budget-tip.warning {
+  background: #51432d;
+  color: #f2d18b;
+}
+
+:root[data-theme="dark"] .budget-tip.danger {
+  background: #512f3c;
+  color: #ffb6c0;
+}
+
+:root[data-theme="dark"] .icon-btn:hover {
+  background: #49385f;
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select {
+  background-color: #30263f;
+  color: #eee8fa;
+  border-color: #51435f;
+}
+
+
+/* PR 2: Meningkatkan kontras teks tema gelap */
+:root[data-theme="dark"] .app-layout,
+:root[data-theme="dark"] .app-layout * {
+  color: #f7f2ff;
+}
+
+:root[data-theme="dark"] .app-layout input::placeholder {
+  color: #cfc2e8;
+}
+
+/* Warna teks gelembung maskot */
+:root[data-theme="dark"] .bibble-bubble {
+  color: #49385f !important;
+  background: #ffffff;
+  border-color: #e5dcf7;
+}
+
+/* PR 2: Memperjelas warna ikon */
+:root[data-theme="dark"] .stat-icon svg,
+:root[data-theme="dark"] .budget-icon svg,
+:root[data-theme="dark"] .leak-icon svg {
+  color: #49385f !important;
+  stroke: currentColor;
+}
+
+:root[data-theme="dark"] .small-icon.green svg {
+  color: #287d61 !important;
+}
+
+:root[data-theme="dark"] .small-icon.coral svg {
+  color: #d95d69 !important;
+}
+
+:root[data-theme="dark"] .stat-icon.mint svg {
+  color: #287d61 !important;
+}
+
+:root[data-theme="dark"] .stat-icon.peach svg {
+  color: #b76b36 !important;
+}
+
+:root[data-theme="dark"] .stat-icon.lilac svg {
+  color: #7655c9 !important;
+}
+
+/* PERBAIKAN KONTRAS IKON TEMA GELAP */
+:root[data-theme="dark"] .stat-icon.lilac { color: #7655c9 !important; }
+:root[data-theme="dark"] .stat-icon.mint { color: #287d61 !important; }
+:root[data-theme="dark"] .stat-icon.peach { color: #b76b36 !important; }
+:root[data-theme="dark"] .budget-icon,
+:root[data-theme="dark"] .leak-icon,
+:root[data-theme="dark"] .quest-badge { color: #7655c9 !important; }
+:root[data-theme="dark"] .small-icon.green { color: #287d61 !important; }
+:root[data-theme="dark"] .small-icon.coral { color: #d95d69 !important; }
+
+:root[data-theme="dark"] .stat-icon svg,
+:root[data-theme="dark"] .budget-icon svg,
+:root[data-theme="dark"] .leak-icon svg,
+:root[data-theme="dark"] .quest-badge svg,
+:root[data-theme="dark"] .small-icon svg {
+  color: inherit !important;
+}
+
+:root[data-theme="dark"] .stat-icon svg *,
+:root[data-theme="dark"] .budget-icon svg *,
+:root[data-theme="dark"] .leak-icon svg *,
+:root[data-theme="dark"] .quest-badge svg *,
+:root[data-theme="dark"] .small-icon svg * {
+  color: inherit !important;
+  stroke: currentColor !important;
+}
+
+/* Perbaikan kontras kartu pada tema gelap */
+:root[data-theme="dark"] .mascot-card {
+  background: #352a47 !important;
+  border-color: #51435f !important;
+  color: #f7f2ff !important;
+}
+
+:root[data-theme="dark"] .mascot-card p,
+:root[data-theme="dark"] .mascot-card b,
+:root[data-theme="dark"] .mascot-card span {
+  color: #e0d4ff !important;
+}
+
+:root[data-theme="dark"] .savings-banner {
+  background: linear-gradient(115deg, #352a47, #49385f) !important;
+  border-color: #665282 !important;
+}
+
+:root[data-theme="dark"] .banner-copy,
+:root[data-theme="dark"] .banner-copy h2,
+:root[data-theme="dark"] .banner-copy p,
+:root[data-theme="dark"] .banner-label {
+  color: #f7f2ff !important;
+}
+
+:root[data-theme="dark"] .banner-copy button {
+  background: #a78bfa !important;
+  color: #241b35 !important;
+  box-shadow: 0 3px 0 #7860b5 !important;
+}
+
+/* Perbaikan tab aktif pada tema gelap */
+:root[data-theme="dark"] .period-tabs button.selected {
+  background: #a78bfa !important;
+  color: #241b35 !important;
+  box-shadow: 0 2px 8px #a78bfa55 !important;
+}
+
+:root[data-theme="dark"] .period-tabs button {
+  color: #d8cbea;
+}
+
+/* Perbaikan halaman Rem Belanja - tema gelap */
+:root[data-theme="dark"] .reminder-hero {
+  background: linear-gradient(120deg, #352a47, #49385f) !important;
+  border-color: #665282 !important;
+}
+
+:root[data-theme="dark"] .reminder-hero h2,
+:root[data-theme="dark"] .reminder-hero p {
+  color: #f0e9ff !important;
+}
+
+:root[data-theme="dark"] .reminder-rules > div {
+  background: #30263f !important;
+  border-color: #51435f !important;
+  color: #f0e9ff !important;
+}
+
+:root[data-theme="dark"] .reminder-rules p {
+  color: #c5b8d8 !important;
+}
+
+:root[data-theme="dark"] .reminder-rules > div > span {
+  background: #49385f !important;
+  color: #e0d4ff !important;
+}
+
+/* PR 2 - Perbaikan halaman Target Tabungan */
+:root[data-theme="dark"] .savings-hero {
+  background: linear-gradient(120deg, #352a47, #49385f) !important;
+  border-color: #665282 !important;
+}
+
+:root[data-theme="dark"] .savings-hero h2,
+:root[data-theme="dark"] .savings-hero p {
+  color: #f0e9ff !important;
+}
+
+:root[data-theme="dark"] .goal-progress-card {
+  background: linear-gradient(120deg, #49385f, #5b456f) !important;
+  border-color: #74608a !important;
+}
+
+:root[data-theme="dark"] .goal-progress-card,
+:root[data-theme="dark"] .goal-progress-card span,
+:root[data-theme="dark"] .goal-progress-card small,
+:root[data-theme="dark"] .goal-progress-card b {
+  color: #f7f2ff !important;
+}
+
+:root[data-theme="dark"] .goal-percent {
+  background: #a78bfa !important;
+  color: #241b35 !important;
+}
+
+:root[data-theme="dark"] .savings-forms > *,
+:root[data-theme="dark"] .mini-form {
+  background: #30263f !important;
+  border-color: #51435f !important;
+  color: #f0e9ff !important;
+}
+
+:root[data-theme="dark"] .mini-form label,
+:root[data-theme="dark"] .mini-form small,
+:root[data-theme="dark"] .mini-form p {
+  color: #c5b8d8 !important;
+}
+
+:root[data-theme="dark"] .mini-form input {
+  background: #241c31 !important;
+  border-color: #665282 !important;
+  color: #ffffff !important;
+}
+
+
+/* PR 2 - Perbaikan popup Catat Transaksi */
+:root[data-theme="dark"] .modal-card {
+  background: #30263f !important;
+  border: 1px solid #665282 !important;
+  color: #f7f2ff !important;
+}
+
+:root[data-theme="dark"] .modal-heading h2 {
+  color: #f7f2ff !important;
+}
+
+:root[data-theme="dark"] .modal-heading .icon-btn {
+  color: #e0d4ff !important;
+}
+
+:root[data-theme="dark"] .modal-form label {
+  color: #d8cbea !important;
+}
+
+:root[data-theme="dark"] .modal-form input,
+:root[data-theme="dark"] .modal-form select {
+  background: #211a2e !important;
+  color: #f7f2ff !important;
+  border-color: #665282 !important;
+}
+
+:root[data-theme="dark"] .modal-form input::placeholder {
+  color: #b9aecb !important;
+}
+
+:root[data-theme="dark"] .type-switch {
+  background: #211a2e !important;
+}
+
+:root[data-theme="dark"] .type-switch button {
+  color: #d8cbea !important;
+}
+
+:root[data-theme="dark"] .type-switch button.expense-active {
+  background: #633d55 !important;
+  color: #ffd4df !important;
+}
+
+:root[data-theme="dark"] .type-switch button.income-active {
+  background: #285444 !important;
+  color: #b9f2d6 !important;
+}
+
+/* PR 2 - Penyempurnaan seluruh modal tema gelap */
+:root[data-theme="dark"] .modal-intro {
+  color: #c5b8d8 !important;
+}
+
+:root[data-theme="dark"] .modal-budget {
+  background: #49385f !important;
+  color: #e0d4ff !important;
+}
+
+:root[data-theme="dark"] .modal-budget b {
+  color: #d6c5ff !important;
+}
+
+:root[data-theme="dark"] .type-switch button {
+  color: #c5b8d8 !important;
+}
+
+:root[data-theme="dark"] .type-switch button.expense-active {
+  background: #593747 !important;
+  color: #ffb6c0 !important;
+}
+
+:root[data-theme="dark"] .type-switch button.income-active {
+  background: #29483f !important;
+  color: #a9e5c9 !important;
+}
+
+:root[data-theme="dark"] .modal-form select option {
+  background: #30263f;
+  color: #f7f2ff;
+}
+/* PR 2 - Perbaikan Quest Harian Tema Gelap */
+:root[data-theme="dark"] .quest-item {
+  border-bottom-color: #51435f;
+}
+
+:root[data-theme="dark"] .quest-check {
+  border-color: #665282;
+  color: #d6c5ff;
+  background: #392e4b;
+}
+
+:root[data-theme="dark"] .quest-item.done .quest-check {
+  background: #29483f;
+  border-color: #527f70;
+  color: #a9e5c9;
+}
+
+:root[data-theme="dark"] .quest-copy b {
+  color: #eee8fa;
+}
+
+:root[data-theme="dark"] .quest-copy small {
+  color: #b9aecb;
+}
+
+:root[data-theme="dark"] .quest-xp {
+  background: #49385f;
+  color: #e0d4ff;
+}
+
+:root[data-theme="dark"] .quest-item.done .quest-xp {
+  background: #29483f;
+  color: #a9e5c9;
+}
+
+:root[data-theme="dark"] .level-progress {
+  background: #392e4b;
+}
+
+:root[data-theme="dark"] .level-row,
+:root[data-theme="dark"] .level-row b {
+  color: #eee8fa;
+}
+
+:root[data-theme="dark"] .level-progress .progress-track {
+  background: #51435f;
+}
+
+:root[data-theme="dark"] .level-fill {
+  background: #a78bfa;
+}
+
+:root[data-theme="dark"] .level-progress > small {
+  color: #b9aecb;
+}

@@ -13,7 +13,7 @@
 
 ## ✨ Tentang Dompet Ceria
 
-**Dompet Ceria** adalah proyek website yang dikembangkan untuk menghadirkan pengalaman pengelolaan keuangan melalui antarmuka yang sederhana, menarik, dan mudah digunakan.
+**Dompet Ceria** ialah proyek website yang dikembangkan untuk menghadirkan pengalaman pengelolaan keuangan melalui antarmuka yang sederhana, menarik, dan mudah digunakan.
 
 Dengan konsep tampilan yang bersih serta sentuhan warna ungu, Dompet Ceria dirancang untuk menjadi platform pengelolaan keuangan yang nyaman digunakan.
 

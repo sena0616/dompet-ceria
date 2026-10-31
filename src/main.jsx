@@ -8,3 +8,5 @@ import "./float.css";
 createRoot(document.getElementById("root")).render(
   <React.StrictMode><App /></React.StrictMode>
 );
+
+document.documentElement.dataset.theme = "dark";

@@ -153,12 +153,12 @@ body::before, body::after {
   pointer-events: none;
 }
 body::before {
-  width: 380px; height: 380px; background: #ffd0de; opacity: .6;
+  width: 380px; height: 380px; background: var(--k-ffd0de); opacity: .6;
   top: -90px; left: 22%;
   animation: drift-a 16s ease-in-out infinite;
 }
 body::after {
-  width: 420px; height: 420px; background: #dccfff; opacity: .55;
+  width: 420px; height: 420px; background: var(--k-dccfff); opacity: .55;
   bottom: -120px; right: 6%;
   animation: drift-b 20s ease-in-out infinite;
 }

@@ -76,9 +76,10 @@ function App() {
 
   const income = transactions.filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
   const expenses = transactions.filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
-  const balance = Number(startingBalance) + income - expenses;
+  const grossBalance = Number(startingBalance) + income - expenses;
+  const balance = grossBalance - Number(saved);
   const pocketTotal = pockets.reduce((sum, pocket) => sum + Number(pocket.balance || 0), 0);
-  const availableBalance = Math.max(0, balance - Number(saved) - pocketTotal);
+  const availableBalance = Math.max(0, balance - pocketTotal);
   const spentToday = transactions.filter(t => t.type === "expense" && t.date === today() && t.fundingSource !== "pocket").reduce((s,t) => s + Number(t.amount), 0);
   const remaining = Number(budget) - spentToday;
   const budgetPercent = Number(budget) > 0 ? Math.min(100, spentToday / Number(budget) * 100) : 0;
@@ -129,7 +130,7 @@ function App() {
       return;
     }
 
-    const baseBalance = balance - (oldTransaction
+    const baseBalance = grossBalance - (oldTransaction
       ? (oldTransaction.type === "income" ? Number(oldTransaction.amount) : -Number(oldTransaction.amount))
       : 0);
 
@@ -217,7 +218,7 @@ function App() {
       ? pockets.find(p => String(p.id) === String(transaction.pocketId))
       : null;
 
-    const reservedAfterDelete = Number(saved) + pocketTotal + (pocketToRestore ? amount : 0)
+    const reservedAfterDelete = pocketTotal + (pocketToRestore ? amount : 0)
       - (transaction.type === "income" ? 0 : 0);
 
     if (transaction.type === "income" && balanceAfterDelete < reservedAfterDelete) {
@@ -316,7 +317,7 @@ function App() {
     e.preventDefault();
     const amount = Number(deposit);
     if (!amount || amount <= 0) return;
-    if (amount > Math.max(0, balance - saved)) {
+    if (amount > availableBalance) {
       setNotice("Setoran melebihi saldo tersedia yang tercatat. Periksa saldo dan transaksi dulu."); return;
     }
     setSaved(n => n + amount);

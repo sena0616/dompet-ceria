@@ -1344,3 +1344,31 @@ textarea:focus {
   min-width: 120px;
   cursor: pointer;
 }
+
+/* Perbaikan Wishlist pada tema gelap */
+:root[data-theme="dark"] .wish-card {
+  background: linear-gradient(145deg, #352a47, #30263f) !important;
+  border: 1px solid #51435f !important;
+  box-shadow: 0 3px 0 #241c31 !important;
+}
+
+:root[data-theme="dark"] .wish-card .wish-picture {
+  background: linear-gradient(145deg, #49385f, #40334f) !important;
+}
+
+:root[data-theme="dark"] .wish-card .wish-info > b {
+  color: #f7f2ff !important;
+}
+
+:root[data-theme="dark"] .wish-card .wish-info > strong {
+  color: #d6c5ff !important;
+}
+
+:root[data-theme="dark"] .wish-card .wish-info > small {
+  color: #b9aecb !important;
+}
+
+:root[data-theme="dark"] .wish-card .wish-actions > button:first-child {
+  background: #49385f !important;
+  color: #e0d4ff !important;
+}

@@ -341,7 +341,7 @@ function App() {
 
   return <div className="app-layout">
     <aside className="sidebar">
-      <div className="logo-row"><div className="logo-cat"><Cat size={27}/></div><div><div className="logo-name">dompet ceria<span>✦</span></div><div className="logo-caption">TEMAN UANGMU</div></div></div>
+      <div className="logo-row"><div className="logo-cat"><Cat size={27}/></div><div><div className="logo-name">Pockiboo<span>✦</span></div><div className="logo-caption">TEMAN UANGMU</div></div></div>
       <div className="mini-profile"><div className="avatar">🐱</div><div className="profile-text"><b>Petualang Hemat</b><span><Sparkles size={13}/> Level {level} · {xp} XP</span></div><div className="level-star">★</div></div>
       <div className="nav-label">MENU UTAMA</div>
       <nav className="nav-list">
@@ -426,7 +426,7 @@ function App() {
       {active === "Pengaturan" && <section className="panel page-panel"><div className="panel-heading"><div><h2>Pengaturan ⚙️</h2><p>Sesuaikan rencana keuangan dengan kebutuhanmu.</p></div></div><div className="settings-grid">
         <div className="mini-form">
           <h3><Palette size={19} /> Tema Tampilan</h3>
-          <p>Pilih tampilan yang nyaman untuk aplikasi Dompet Ceria.</p>
+          <p>Pilih tampilan yang nyaman untuk aplikasi Pockiboo.</p>
           <div className="theme-switch">
             <button type="button" className={theme === "light" ? "primary-btn" : "secondary-btn"} onClick={() => setTheme("light")}><Sun size={16} /> Light Mode</button>
             <button type="button" className={theme === "dark" ? "primary-btn" : "secondary-btn"} onClick={() => setTheme("dark")}><Moon size={16} /> Dark Mode</button>
@@ -462,7 +462,7 @@ function App() {
           <small>Saldo saat ini = saldo awal + pemasukan - pengeluaran.</small>
         </form><form className="mini-form" onSubmit={e=>{e.preventDefault();setBudget(Math.max(0,Number(e.currentTarget.budget.value)));setNotice("Anggaran harian diperbarui.");}}><h3><Wallet size={19}/> Anggaran harian</h3><label>Anggaran maksimal (Rp)<input name="budget" type="number" min="0" defaultValue={budget} required/></label><button className="primary-btn" type="submit">Simpan anggaran</button></form><div className="mini-form"><h3><Heart size={19}/> Data aplikasi</h3><p>Data tersimpan di browser yang sedang kamu gunakan melalui localStorage. Data tidak otomatis tersinkron ke perangkat lain.</p><button className="secondary-btn" onClick={clearTransactions}>Kosongkan riwayat transaksi</button>
 <button className="secondary-btn" onClick={resetAll}>Reset semua data</button></div></div></section>}
-      <footer className="app-footer"><span>🐾</span> Dompet Ceria · Teman kecil untuk keputusan keuangan yang lebih sadar <span>♡</span></footer>
+      <footer className="app-footer"><span>🐾</span> Pockiboo · Teman kecil untuk keputusan keuangan yang lebih sadar <span>♡</span></footer>
     </main>
 
     {showTransaction && <Modal title={editing?"Edit transaksi":"Catat transaksi baru"} onClose={()=>setShowTransaction(false)}><form className="modal-form" onSubmit={saveTransaction}><div className="type-switch"><button type="button" className={transactionForm.type==="expense"?"expense-active":""} onClick={()=>changeType("expense")}><TrendingDown size={16}/> Pengeluaran</button><button type="button" className={transactionForm.type==="income"?"income-active":""} onClick={()=>changeType("income")}><TrendingUp size={16}/> Pemasukan</button></div>{transactionForm.type === "expense" && <>

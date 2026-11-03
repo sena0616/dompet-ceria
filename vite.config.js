@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['bibble.jpg'],
       manifest: {
-        name: 'Dompet Ceria',
-        short_name: 'Dompet Ceria',
-        description: 'Teman keuanganmu',
+        name: 'Pockiboo',
+        short_name: 'Pockiboo',
+        description: 'Your Little Money Buddy',
         theme_color: '#fff8ef',
         background_color: '#fff8ef',
         display: 'standalone',
@@ -21,12 +21,12 @@ export default defineConfig({
         scope: '/dompet-ceria/',
         icons: [
           {
-            src: '/dompet-ceria/bibble-192.png',
+            src: '/dompet-ceria/pockiboo-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/dompet-ceria/bibble-512.png',
+            src: '/dompet-ceria/pockiboo-512.png',
             sizes: '512x512',
             type: 'image/png'
           }

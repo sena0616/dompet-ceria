@@ -40,6 +40,7 @@ function App() {
   const [budget, setBudget] = useState(() => read("dc-budget", 50000));
   const [goal, setGoal] = useState(() => read("dc-goal", 500000));
   const [saved, setSaved] = useState(() => read("dc-saved", 0));
+  const [pockets, setPockets] = useState(() => read("dc-pockets", []));
   const [wishes, setWishes] = useState(() => read("dc-wishes", []));
   const [xp, setXp] = useState(() => read("dc-xp", 0));
   const [active, setActive] = useState("Dashboard");
@@ -50,10 +51,12 @@ function App() {
   const [editing, setEditing] = useState(null);
   const [notice, setNotice] = useState("");
   const [query, setQuery] = useState("");
-  const [transactionForm, setTransactionForm] = useState({ name: "", amount: "", type: "expense", category: expenseCategories[0], date: today() });
+  const [transactionForm, setTransactionForm] = useState({ name: "", amount: "", type: "expense", category: expenseCategories[0], date: today(), fundingSource: "budget", pocketId: "" });
   const [reminderForm, setReminderForm] = useState({ name: "", amount: "", category: expenseCategories[0] });
   const [wishForm, setWishForm] = useState({ name: "", amount: "" });
   const [deposit, setDeposit] = useState("");
+  const [pocketForm, setPocketForm] = useState({ name: "", target: "" });
+  const [pocketDeposit, setPocketDeposit] = useState({});
   const [theme, setTheme] = useState(() => read("dc-theme", "dark"));
 
   useEffect(() => {
@@ -67,13 +70,16 @@ function App() {
   useEffect(() => localStorage.setItem("dc-budget", JSON.stringify(budget)), [budget]);
   useEffect(() => localStorage.setItem("dc-goal", JSON.stringify(goal)), [goal]);
   useEffect(() => localStorage.setItem("dc-saved", JSON.stringify(saved)), [saved]);
+  useEffect(() => localStorage.setItem("dc-pockets", JSON.stringify(pockets)), [pockets]);
   useEffect(() => localStorage.setItem("dc-wishes", JSON.stringify(wishes)), [wishes]);
   useEffect(() => localStorage.setItem("dc-xp", JSON.stringify(xp)), [xp]);
 
   const income = transactions.filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
   const expenses = transactions.filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
   const balance = Number(startingBalance) + income - expenses;
-  const spentToday = transactions.filter(t => t.type === "expense" && t.date === today()).reduce((s,t) => s + Number(t.amount), 0);
+  const pocketTotal = pockets.reduce((sum, pocket) => sum + Number(pocket.balance || 0), 0);
+  const availableBalance = Math.max(0, balance - Number(saved) - pocketTotal);
+  const spentToday = transactions.filter(t => t.type === "expense" && t.date === today() && t.fundingSource !== "pocket").reduce((s,t) => s + Number(t.amount), 0);
   const remaining = Number(budget) - spentToday;
   const budgetPercent = Number(budget) > 0 ? Math.min(100, spentToday / Number(budget) * 100) : 0;
   const level = Math.floor(xp / 100) + 1;
@@ -108,73 +114,179 @@ function App() {
 
   const openNewTransaction = () => {
     setEditing(null);
-    setTransactionForm({ name: "", amount: "", type: "expense", category: expenseCategories[0], date: today() });
+    setTransactionForm({ name: "", amount: "", type: "expense", category: expenseCategories[0], date: today(), fundingSource: "budget", pocketId: "" });
     setShowTransaction(true);
   };
-  const changeType = (type) => setTransactionForm(f => ({ ...f, type, category: type === "income" ? incomeCategories[0] : expenseCategories[0] }));
+  const changeType = (type) => setTransactionForm(f => ({ ...f, type, category: type === "income" ? incomeCategories[0] : expenseCategories[0], fundingSource: "budget", pocketId: "" }));
 
   function saveTransaction(e) {
     e.preventDefault();
     const amount = Number(transactionForm.amount);
+    const oldTransaction = editing ? transactions.find(t => t.id === editing) : null;
 
     if (!transactionForm.name.trim() || !Number.isFinite(amount) || amount <= 0 || !transactionForm.date) {
       setNotice("Isi nama, tanggal, dan jumlah yang valid dulu, ya.");
       return;
     }
 
-    const transactionsWithoutCurrent = editing
-      ? transactions.filter(t => t.id !== editing)
-      : transactions;
+    const baseBalance = balance - (oldTransaction
+      ? (oldTransaction.type === "income" ? Number(oldTransaction.amount) : -Number(oldTransaction.amount))
+      : 0);
 
-    const availableBalance = Number(startingBalance)
-      + transactionsWithoutCurrent
-          .filter(t => t.type === "income")
-          .reduce((sum, t) => sum + Number(t.amount), 0)
-      - transactionsWithoutCurrent
-          .filter(t => t.type === "expense")
-          .reduce((sum, t) => sum + Number(t.amount), 0);
+    let adjustedPockets = pockets.map(p => ({ ...p }));
+    if (oldTransaction?.type === "expense" && oldTransaction.fundingSource === "pocket") {
+      adjustedPockets = adjustedPockets.map(p =>
+        String(p.id) === String(oldTransaction.pocketId)
+          ? { ...p, balance: Number(p.balance || 0) + Number(oldTransaction.amount) }
+          : p
+      );
+    }
 
-    const projectedBalance = availableBalance
-      + (transactionForm.type === "income" ? amount : -amount);
+    const adjustedPocketTotal = adjustedPockets.reduce((sum, p) => sum + Number(p.balance || 0), 0);
+    const availableBefore = Math.max(0, baseBalance - Number(saved) - adjustedPocketTotal);
 
-    if (projectedBalance < 0) {
-      setNotice("Transaksi ditolak! Saldo tidak boleh menjadi minus. Saldo tersedia " + money(Math.max(0, availableBalance)) + ".");
+    let updatedPockets = adjustedPockets;
+    const fundingSource = transactionForm.type === "expense"
+      ? transactionForm.fundingSource || "budget"
+      : "budget";
+    const pocketId = fundingSource === "pocket" ? transactionForm.pocketId : "";
+
+    if (transactionForm.type === "expense" && fundingSource === "pocket") {
+      const selectedPocket = adjustedPockets.find(p => String(p.id) === String(pocketId));
+
+      if (!selectedPocket) {
+        setNotice("Pilih kantong Bibble yang valid.");
+        return;
+      }
+
+      if (amount > Number(selectedPocket.balance || 0)) {
+        setNotice("Saldo kantong tidak cukup untuk pengeluaran ini.");
+        return;
+      }
+
+      updatedPockets = adjustedPockets.map(p =>
+        String(p.id) === String(pocketId)
+          ? { ...p, balance: Number(p.balance || 0) - amount }
+          : p
+      );
+    } else if (transactionForm.type === "expense" && amount > availableBefore) {
+      setNotice("Saldo tersedia tidak cukup. Uang di kantong dan tabungan tidak bisa digunakan dari anggaran harian.");
       return;
     }
 
+    if (baseBalance + (transactionForm.type === "income" ? amount : -amount) < 0) {
+      setNotice("Transaksi ditolak! Saldo keseluruhan tidak boleh minus.");
+      return;
+    }
+
+    const transaction = {
+      ...transactionForm,
+      amount,
+      fundingSource,
+      pocketId,
+      id: editing || Date.now()
+    };
+
+    setPockets(updatedPockets);
     if (editing) {
-      setTransactions(list => list.map(t => t.id === editing ? { ...transactionForm, amount, id: editing } : t));
-      setNotice("Transaksi berhasil diperbarui \u2728");
+      setTransactions(list => list.map(t => t.id === editing ? transaction : t));
+      setNotice("Transaksi berhasil diperbarui ✨");
     } else {
-      setTransactions(list => [{ ...transactionForm, amount, id: Date.now() }, ...list]);
+      setTransactions(list => [transaction, ...list]);
       setXp(x => x + 10);
-      setNotice("Transaksi tersimpan! Kamu mendapat 10 XP \u2B50");
+      setNotice("Transaksi tersimpan! Kamu mendapat 10 XP ⭐");
     }
 
     setShowTransaction(false);
-  }
-  function editTransaction(t) {
+    setEditing(null);
+  }  function editTransaction(t) {
     setEditing(t.id);
-    setTransactionForm({ name: t.name, amount: String(t.amount), type: t.type, category: t.category, date: t.date });
+    setTransactionForm({ name: t.name, amount: String(t.amount), type: t.type, category: t.category, date: t.date, fundingSource: t.fundingSource || "budget", pocketId: t.pocketId || "" });
     setShowTransaction(true);
   }
   function deleteTransaction(id) {
     const transaction = transactions.find(t => t.id === id);
     if (!transaction) return;
 
+    const amount = Number(transaction.amount);
     const balanceAfterDelete = transaction.type === "income"
-      ? balance - Number(transaction.amount)
-      : balance + Number(transaction.amount);
+      ? balance - amount
+      : balance + amount;
 
-    if (balanceAfterDelete < 0) {
-      setNotice("Pemasukan tidak bisa dihapus karena saldo akan menjadi minus.");
+    const pocketToRestore = transaction.type === "expense" && transaction.fundingSource === "pocket"
+      ? pockets.find(p => String(p.id) === String(transaction.pocketId))
+      : null;
+
+    const reservedAfterDelete = Number(saved) + pocketTotal + (pocketToRestore ? amount : 0)
+      - (transaction.type === "income" ? 0 : 0);
+
+    if (transaction.type === "income" && balanceAfterDelete < reservedAfterDelete) {
+      setNotice("Pemasukan tidak bisa dihapus karena saldo kantong atau tabungan sudah dialokasikan.");
       return;
     }
 
     if (window.confirm("Hapus transaksi ini?")) {
+      if (pocketToRestore) {
+        setPockets(list => list.map(p =>
+          String(p.id) === String(transaction.pocketId)
+            ? { ...p, balance: Number(p.balance || 0) + amount }
+            : p
+        ));
+      }
       setTransactions(list => list.filter(t => t.id !== id));
       setNotice("Transaksi dihapus.");
     }
+  }
+
+
+  function createPocket(e) {
+    e.preventDefault();
+    const name = pocketForm.name.trim();
+    const target = Number(pocketForm.target);
+
+    if (!name || !Number.isFinite(target) || target <= 0) {
+      setNotice("Isi nama dan target kantong dengan benar.");
+      return;
+    }
+
+    setPockets(list => [...list, {
+      id: Date.now(),
+      name,
+      target,
+      balance: 0,
+      created: today()
+    }]);
+    setPocketForm({ name: "", target: "" });
+    setNotice("Kantong Bibble berhasil dibuat!");
+  }
+  function addPocketFunds(e, pocketId) {
+    e.preventDefault();
+    const amount = Number(pocketDeposit[pocketId]);
+    const pocket = pockets.find(p => p.id === pocketId);
+
+    if (!pocket || !Number.isFinite(amount) || amount <= 0) {
+      setNotice("Masukkan jumlah setoran yang valid.");
+      return;
+    }
+
+    if (amount > availableBalance) {
+      setNotice("Saldo tersedia tidak cukup untuk mengisi kantong.");
+      return;
+    }
+
+    setPockets(list => list.map(p =>
+      p.id === pocketId ? { ...p, balance: Number(p.balance || 0) + amount } : p
+    ));
+    setPocketDeposit(values => ({ ...values, [pocketId]: "" }));
+    setNotice("Saldo kantong berhasil ditambahkan!");
+  }
+
+  function deletePocket(pocketId) {
+    const pocket = pockets.find(p => String(p.id) === String(pocketId));
+    if (!pocket) return;
+    if (!window.confirm("Hapus kantong " + pocket.name + "? Sisa saldonya akan kembali ke saldo tersedia.")) return;
+    setPockets(list => list.filter(p => String(p.id) !== String(pocketId)));
+    setNotice("Kantong dihapus. Sisa saldo kembali ke saldo tersedia.");
   }
   function saveWish(e) {
     e.preventDefault();
@@ -212,15 +324,16 @@ function App() {
     setDeposit("");
     setNotice("Tabungan bertambah! Kamu mendapat 20 XP 💰");
   }
-  function clearTransactions() {
-    if (window.confirm("Kosongkan semua riwayat transaksi?")) {
+    function clearTransactions() {
+    if (window.confirm("Kosongkan semua riwayat transaksi? Saldo kantong akan menjadi Rp0, tetapi kantong dan target tetap ada.")) {
       setTransactions([]);
-      setNotice("Semua riwayat transaksi berhasil dikosongkan.");
+      setPockets(list => list.map(p => ({ ...p, balance: 0 })));
+      setNotice("Riwayat dikosongkan dan saldo kantong direset.");
     }
   }
   function resetAll() {
     if (window.confirm("Reset semua data? Transaksi, tabungan, wishlist, dan XP akan dihapus dan tidak bisa dikembalikan.")) {
-      setTransactions(initialTransactions); setStartingBalance(0); setBudget(50000); setGoal(500000); setSaved(0); setWishes([]); setXp(0);
+      setTransactions(initialTransactions); setStartingBalance(0); setBudget(50000); setGoal(500000); setSaved(0); setPockets([]); setWishes([]); setXp(0);
       setNotice("Semua data berhasil direset.");
     }
   }
@@ -233,7 +346,7 @@ function App() {
       <nav className="nav-list">
         {[
           ["Dashboard", House], ["Transaksi", ArrowLeftRight], ["Laporan", ChartNoAxesColumn],
-          ["Rem Belanja", ShieldCheck], ["Daftar Keinginan", Heart], ["Target Tabungan", Target]
+          ["Rem Belanja", ShieldCheck], ["Daftar Keinginan", Heart], ["Kantong Bibble", Wallet], ["Target Tabungan", Target]
         ].map(([label,Icon]) => <button key={label} className={`nav-item ${active===label?"active":""}`} onClick={() => setActive(label)}><Icon size={18}/><span>{label}</span>{label==="Rem Belanja" && <span className="nav-dot"/>}</button>)}
       <button className={`nav-item nav-mobile-only ${active==="Pengaturan"?"active":""}`} onClick={() => setActive("Pengaturan")}><Settings size={18}/><span>Pengaturan</span></button></nav>
       <div className="sidebar-bottom"><div className="mascot-card"><div className="mascot-spark">✦</div><b>Pelan-pelan asal konsisten!</b><p>Setiap keputusan kecil bisa bikin tabunganmu tumbuh.</p><div className="mascot-stars">✦ ✧ ✦</div></div><button className="nav-item settings" onClick={() => setActive("Pengaturan")}><Settings size={18}/>Pengaturan</button><div className="sidebar-footer">Made with ♡ for your future</div></div>
@@ -246,11 +359,11 @@ function App() {
       {active === "Dashboard" && <>
         {theme === "dark" ? <Astronot /> : <Bibble balance={balance} />}
 <section className="hero-grid">
-          <div className="balance-card"><div className="balance-top"><div><div className="eyebrow">TOTAL SALDO TERCATAT <span className="tiny-spark">✦</span></div><div className="balance-number" key={balance}>{money(balance)}</div><div className="balance-note"><span className="balance-status">●</span> Tetap semangat mengatur uang!</div></div><div className="wallet-illustration"><div className="wallet-shape"><div className="wallet-button">♡</div><div className="wallet-coin">Rp</div></div><span className="float-star star-a">✦</span><span className="float-star star-b">✧</span><span className="float-star star-c">✦</span></div></div><div className="balance-divider"/><div className="balance-bottom"><div><span className="small-icon green"><TrendingUp size={16}/></span><span>Total pemasukan</span><b>{money(income)}</b></div><div><span className="small-icon coral"><TrendingDown size={16}/></span><span>Total pengeluaran</span><b>{money(expenses)}</b></div></div></div>
-          <div className="budget-card"><div className="section-heading"><div><div className="eyebrow dark">ANGGARAN HARIAN</div><h3>Jatah hari ini <span>☀️</span></h3></div><div className="budget-icon"><Wallet size={21}/></div></div><div className="budget-amount">{money(Math.max(0,remaining))}<span> tersisa</span></div><div className="budget-caption">dari {money(budget)} anggaran harian</div><div className="progress-track"><div className={`progress-fill ${budgetPercent>=100?"over":budgetPercent>=75?"warn":""}`} style={{width:`${budgetPercent}%`}}/></div><div className="progress-meta"><span>{money(spentToday)} terpakai</span><b>{Math.round(budgetPercent)}%</b></div>{budgetPercent>=100?<div className="budget-tip danger"><AlertTriangle size={15}/> Anggaran harianmu sudah habis. Yuk, tahan belanja dulu!</div>:budgetPercent>=75?<div className="budget-tip warning"><AlertTriangle size={15}/> Hati-hati, anggaranmu mulai menipis.</div>:<div className="budget-tip"><Sparkles size={15}/> Kamu masih punya ruang untuk hari ini!</div>}</div>
+          <div className="balance-card"><div className="balance-top"><div><div className="eyebrow">SALDO KESELURUHAN <span className="tiny-spark">✦</span></div><div className="balance-number" key={balance}>{money(balance)}</div><div className="balance-note"><span className="balance-status">●</span> Tetap semangat mengatur uang!</div></div><div className="wallet-illustration"><div className="wallet-shape"><div className="wallet-button">♡</div><div className="wallet-coin">Rp</div></div><span className="float-star star-a">✦</span><span className="float-star star-b">✧</span><span className="float-star star-c">✦</span></div></div><div className="balance-divider"/><div className="balance-bottom"><div><span className="small-icon green"><TrendingUp size={16}/></span><span>Total pemasukan</span><b>{money(income)}</b></div><div><span className="small-icon coral"><TrendingDown size={16}/></span><span>Total pengeluaran</span><b>{money(expenses)}</b></div></div></div>
+          <div className="budget-card"><div className="section-heading"><div><div className="eyebrow dark">SALDO HARIAN</div><h3>Jatah hari ini <span>☀️</span></h3></div><div className="budget-icon"><Wallet size={21}/></div></div><div className="budget-amount">{money(Math.max(0,remaining))}<span> tersisa</span></div><div className="budget-caption">dari {money(budget)} anggaran harian</div><div className="progress-track"><div className={`progress-fill ${budgetPercent>=100?"over":budgetPercent>=75?"warn":""}`} style={{width:`${budgetPercent}%`}}/></div><div className="progress-meta"><span>{money(spentToday)} terpakai</span><b>{Math.round(budgetPercent)}%</b></div>{budgetPercent>=100?<div className="budget-tip danger"><AlertTriangle size={15}/> Anggaran harianmu sudah habis. Yuk, tahan belanja dulu!</div>:budgetPercent>=75?<div className="budget-tip warning"><AlertTriangle size={15}/> Hati-hati, anggaranmu mulai menipis.</div>:<div className="budget-tip"><Sparkles size={15}/> Kamu masih punya ruang untuk hari ini!</div>}</div>
         </section>
 
-        <section className="stat-grid"><div className="stat-card"><div className="stat-icon lilac"><Coins size={20}/></div><div className="stat-label">Total tabungan</div><div className="stat-value">{money(saved)}</div><div className="stat-foot"><span className="foot-dot purple"/>Sedikit demi sedikit</div></div><div className="stat-card"><div className="stat-icon mint"><Target size={20}/></div><div className="stat-label">Target tabungan</div><div className="stat-value">{money(goal)}</div><div className="stat-foot"><span className="foot-dot green"/> {goal>0?Math.min(100,Math.round(saved/goal*100)):0}% tercapai</div></div><div className="stat-card"><div className="stat-icon peach"><Sparkles size={20}/></div><div className="stat-label">Poin pengalaman</div><div className="stat-value">{xp} <small>XP</small></div><div className="stat-foot"><span className="foot-dot orange"/>Level {level} · Penjelajah Dompet</div></div></section>
+        <section className="stat-grid"><div className="stat-card"><div className="stat-icon mint"><Wallet size={20}/></div><div className="stat-label">Saldo Kantong</div><div className="stat-value">{money(pocketTotal)}</div><div className="stat-foot"><span className="foot-dot green"/>Total seluruh kantong</div></div><div className="stat-card"><div className="stat-icon lilac"><Coins size={20}/></div><div className="stat-label">Total tabungan</div><div className="stat-value">{money(saved)}</div><div className="stat-foot"><span className="foot-dot purple"/>Sedikit demi sedikit</div></div><div className="stat-card"><div className="stat-icon mint"><Target size={20}/></div><div className="stat-label">Target tabungan</div><div className="stat-value">{money(goal)}</div><div className="stat-foot"><span className="foot-dot green"/> {goal>0?Math.min(100,Math.round(saved/goal*100)):0}% tercapai</div></div><div className="stat-card"><div className="stat-icon peach"><Sparkles size={20}/></div><div className="stat-label">Poin pengalaman</div><div className="stat-value">{xp} <small>XP</small></div><div className="stat-foot"><span className="foot-dot orange"/>Level {level} · Penjelajah Dompet</div></div></section>
 
         <section className="content-grid"><div className="panel transactions-panel"><div className="panel-heading"><div><h2>Transaksi terbaru <span className="heading-emoji">🧾</span></h2><p>Setiap catatan bikin kamu makin sadar.</p></div><button className="text-btn" onClick={() => setActive("Transaksi")}>Lihat semua <ChevronRight size={15}/></button></div><TransactionList items={[...transactions].sort((a,b)=>b.id-a.id).slice(0,5)} onEdit={editTransaction} onDelete={deleteTransaction}/></div>
           <div className="panel quest-panel"><div className="panel-heading"><div><h2>Quest harian <span className="heading-emoji">🎯</span></h2><p>Misi kecil untuk dompet yang sehat.</p></div><div className="quest-badge"><Trophy size={17}/></div></div><div className="quest-list">{quests.map((q,i)=><div className={`quest-item ${q.done?"done":""}`} key={q.title}><div className="quest-check">{q.done?<CheckCircle2 size={19}/>:<span>{i+1}</span>}</div><div className="quest-copy"><b>{q.title}</b><small>{q.detail}</small></div><span className="quest-xp">{q.done?"Selesai":q.reward}</span></div>)}</div><div className="level-progress"><div className="level-row"><span>Progress level {level}</span><b>{xp%100}/100 XP</b></div><div className="progress-track"><div className="level-fill" style={{width:`${xp%100}%`}}/></div><small>Terus catat aktivitasmu untuk mengumpulkan XP!</small></div></div></section>
@@ -267,6 +380,46 @@ function App() {
 
       {active === "Daftar Keinginan" && <section className="panel page-panel"><div className="panel-heading"><div><h2>Daftar keinginan 💗</h2><p>Keinginan boleh ada; keputusan tidak harus sekarang.</p></div><button className="primary-btn" onClick={()=>setShowWish(true)}><Plus size={17}/> Tambah keinginan</button></div>{wishes.length===0?<Empty text="Belum ada keinginan. Simpan barang yang ingin kamu beli di sini."/>:<div className="wish-grid">{wishes.map(w=><div className="wish-card" key={w.id}><div className="wish-picture">🎁</div><div className="wish-info"><b>{w.name}</b><strong>{money(w.amount)}</strong><small><Clock size={13}/> Ditambahkan {w.created}</small><div className="wish-actions"><button onClick={()=>setNotice("Beri jeda 24 jam, cek anggaran, lalu putuskan dengan tenang.")}><Clock size={14}/> Pertimbangkan lagi</button><button className="icon-btn" onClick={()=>removeWish(w.id)} aria-label="Hapus keinginan"><Trash2 size={15}/></button></div></div></div>)}</div>}</section>}
 
+      {active === "Kantong Bibble" && <section className="panel page-panel">
+        <div className="panel-heading">
+          <div><h2>Kantong Bibble 🐰</h2><p>Pisahkan uang untuk kebutuhan khusus tanpa mengganggu anggaran harian.</p></div>
+        </div>
+
+        <div className="stats-grid">
+          <div className="stat-card"><span>Saldo keseluruhan</span><h3>{money(balance)}</h3></div>
+
+          <div className="stat-card"><span>Total kantong</span><h3>{money(pocketTotal)}</h3></div>
+        </div>
+
+        <form className="mini-form" onSubmit={createPocket}>
+          <h3><Plus size={19}/> Buat kantong baru</h3>
+          <label>Nama kantong<input type="text" value={pocketForm.name} onChange={e=>setPocketForm(f=>({...f,name:e.target.value}))} placeholder="Contoh: Belanja bulanan" required /></label>
+          <label>Target kantong (Rp)<input type="number" min="1" value={pocketForm.target} onChange={e=>setPocketForm(f=>({...f,target:e.target.value}))} placeholder="Contoh: 300000" required /></label>
+          <button className="primary-btn" type="submit">Buat kantong</button>
+        </form>
+
+        <div className="panel-heading"><div><h3>Kantong milikmu</h3><p>Uang di sini tidak ikut direset setiap hari.</p></div></div>
+
+        {pockets.length === 0 ? <Empty text="Belum ada kantong. Yuk, buat kantong pertamamu!" /> :
+          <div className="wish-grid">
+            {pockets.map(p => <div className="wish-card" key={p.id}>
+              <div className="wish-picture">🐰</div>
+              <div className="wish-info">
+                <b>{p.name}</b>
+                <strong>{money(p.balance)}</strong>
+                <small>Target: {money(p.target)}</small>
+                <div className="progress-track"><div className="goal-fill" style={{width:`${p.target>0?Math.min(100,p.balance/p.target*100):0}%`}} /></div>
+                <small>{p.target>0?Math.round(p.balance/p.target*100):0}% tercapai</small>
+                <form className="mini-form" onSubmit={e=>addPocketFunds(e,p.id)}>
+                  <label>Tambah saldo (Rp)<input type="number" min="1" value={pocketDeposit[p.id] || ""} onChange={e=>setPocketDeposit(v=>({...v,[p.id]:e.target.value}))} placeholder="Jumlah setoran" required /></label>
+                  <button className="primary-btn" type="submit">Isi kantong</button>
+                </form>
+                <button className="icon-btn" onClick={()=>deletePocket(p.id)} aria-label="Hapus kantong"><Trash2 size={15}/> Hapus kantong</button>
+              </div>
+            </div>)}
+          </div>
+        }
+      </section>}
       {active === "Target Tabungan" && <section className="panel page-panel savings-page"><div className="savings-hero"><div className="savings-hero-art">🐷<span>🪙</span></div><div><div className="eyebrow dark">SMALL STEPS, BIG DREAMS</div><h2>Tabungan impianmu</h2><p>Tetapkan tujuan yang realistis dan isi sedikit demi sedikit.</p></div></div><div className="goal-progress-card"><div className="goal-top"><div><span>Total terkumpul</span><h2>{money(saved)}</h2></div><div className="goal-percent">{goal>0?Math.min(100,Math.round(saved/goal*100)):0}%</div></div><div className="progress-track big"><div className="goal-fill" style={{width:`${goal>0?Math.min(100,saved/goal*100):0}%`}}/></div><div className="goal-meta"><span>Mulai dari langkah kecil 🌱</span><b>Target {money(goal)}</b></div></div><div className="savings-forms"><form className="mini-form" onSubmit={addSavings}><h3><PiggyBank size={19}/> Tambah tabungan</h3><label>Jumlah setoran (Rp)<input type="number" min="1" value={deposit} onChange={e=>setDeposit(e.target.value)} placeholder="Contoh: 10000" required/></label><button className="primary-btn" type="submit">Simpan setoran</button><small>Setoran dicatat terpisah dari transaksi. Catat juga pengeluaran nyata agar saldo tetap akurat.</small></form><form className="mini-form" onSubmit={e=>{e.preventDefault();setGoal(Math.max(0,Number(e.currentTarget.goal.value)));setNotice("Target tabungan diperbarui!");}}><h3><Target size={19}/> Ubah target</h3><label>Target tabungan (Rp)<input name="goal" type="number" min="0" defaultValue={goal} required/></label><button className="secondary-btn" type="submit">Perbarui target</button></form></div></section>}
 
       {active === "Pengaturan" && <section className="panel page-panel"><div className="panel-heading"><div><h2>Pengaturan ⚙️</h2><p>Sesuaikan rencana keuangan dengan kebutuhanmu.</p></div></div><div className="settings-grid">
@@ -311,7 +464,16 @@ function App() {
       <footer className="app-footer"><span>🐾</span> Dompet Ceria · Teman kecil untuk keputusan keuangan yang lebih sadar <span>♡</span></footer>
     </main>
 
-    {showTransaction && <Modal title={editing?"Edit transaksi":"Catat transaksi baru"} onClose={()=>setShowTransaction(false)}><form className="modal-form" onSubmit={saveTransaction}><div className="type-switch"><button type="button" className={transactionForm.type==="expense"?"expense-active":""} onClick={()=>changeType("expense")}><TrendingDown size={16}/> Pengeluaran</button><button type="button" className={transactionForm.type==="income"?"income-active":""} onClick={()=>changeType("income")}><TrendingUp size={16}/> Pemasukan</button></div><label>Nama transaksi<input autoFocus value={transactionForm.name} onChange={e=>setTransactionForm(f=>({...f,name:e.target.value}))} placeholder="Contoh: makan siang" required/></label><label>Jumlah (Rp)<input type="number" min="1" value={transactionForm.amount} onChange={e=>setTransactionForm(f=>({...f,amount:e.target.value.replace(/-/g,"")}))} placeholder="Contoh: 15000" required/></label><label>Kategori<select value={transactionForm.category} onChange={e=>setTransactionForm(f=>({...f,category:e.target.value}))}>{(transactionForm.type==="income"?incomeCategories:expenseCategories).map(c=><option key={c}>{c}</option>)}</select></label><label>Tanggal<input type="date" value={transactionForm.date} onChange={e=>setTransactionForm(f=>({...f,date:e.target.value}))} required/></label><button className="primary-btn full-btn" type="submit">{editing?"Simpan perubahan":"Simpan transaksi"}</button></form></Modal>}
+    {showTransaction && <Modal title={editing?"Edit transaksi":"Catat transaksi baru"} onClose={()=>setShowTransaction(false)}><form className="modal-form" onSubmit={saveTransaction}><div className="type-switch"><button type="button" className={transactionForm.type==="expense"?"expense-active":""} onClick={()=>changeType("expense")}><TrendingDown size={16}/> Pengeluaran</button><button type="button" className={transactionForm.type==="income"?"income-active":""} onClick={()=>changeType("income")}><TrendingUp size={16}/> Pemasukan</button></div>{transactionForm.type === "expense" && <>
+<label>Sumber dana<select value={transactionForm.fundingSource || "budget"} onChange={e=>setTransactionForm(f=>({...f,fundingSource:e.target.value,pocketId:""}))}>
+<option value="budget">Anggaran Harian</option>
+<option value="pocket" disabled={pockets.length===0}>Kantong Bibble</option>
+</select></label>
+{transactionForm.fundingSource === "pocket" && <label>Pilih kantong<select value={transactionForm.pocketId || ""} onChange={e=>setTransactionForm(f=>({...f,pocketId:e.target.value}))} required>
+<option value="">Pilih kantong</option>
+{pockets.map(p=><option key={p.id} value={p.id}>{p.name} — {money(p.balance)}</option>)}
+</select></label>}
+</>}<label>Nama transaksi<input autoFocus value={transactionForm.name} onChange={e=>setTransactionForm(f=>({...f,name:e.target.value}))} placeholder="Contoh: makan siang" required/></label><label>Jumlah (Rp)<input type="number" min="1" value={transactionForm.amount} onChange={e=>setTransactionForm(f=>({...f,amount:e.target.value.replace(/-/g,"")}))} placeholder="Contoh: 15000" required/></label><label>Kategori<select value={transactionForm.category} onChange={e=>setTransactionForm(f=>({...f,category:e.target.value}))}>{(transactionForm.type==="income"?incomeCategories:expenseCategories).map(c=><option key={c}>{c}</option>)}</select></label><label>Tanggal<input type="date" value={transactionForm.date} onChange={e=>setTransactionForm(f=>({...f,date:e.target.value}))} required/></label><button className="primary-btn full-btn" type="submit">{editing?"Simpan perubahan":"Simpan transaksi"}</button></form></Modal>}
     {showReminder && <Modal title="Cek sebelum checkout 🛒" onClose={()=>setShowReminder(false)}><form className="modal-form" onSubmit={checkPurchase}><p className="modal-intro">Jeda sebentar. Kita cek dulu apakah belanja ini sesuai rencana.</p><label>Barang yang ingin dibeli<input autoFocus value={reminderForm.name} onChange={e=>setReminderForm(f=>({...f,name:e.target.value}))} placeholder="Contoh: tumbler lucu" required/></label><label>Harga (Rp)<input type="number" min="1" value={reminderForm.amount} onChange={e=>setReminderForm(f=>({...f,amount:e.target.value}))} placeholder="Contoh: 45000" required/></label><label>Kategori<select value={reminderForm.category} onChange={e=>setReminderForm(f=>({...f,category:e.target.value}))}>{expenseCategories.map(c=><option key={c}>{c}</option>)}</select></label><div className="modal-budget">Anggaran tersisa hari ini <b>{money(Math.max(0,remaining))}</b></div><button className="primary-btn full-btn" type="submit">Periksa & simpan keinginan</button></form></Modal>}
     {showWish && <Modal title="Tambah daftar keinginan 💗" onClose={()=>setShowWish(false)}><form className="modal-form" onSubmit={saveWish}><p className="modal-intro">Simpan dulu, beri jeda 24 jam sebelum memutuskan membeli.</p><label>Nama barang<input autoFocus value={wishForm.name} onChange={e=>setWishForm(f=>({...f,name:e.target.value}))} placeholder="Apa yang kamu inginkan?" required/></label><label>Perkiraan harga (Rp)<input type="number" min="1" value={wishForm.amount} onChange={e=>setWishForm(f=>({...f,amount:e.target.value}))} placeholder="Contoh: 75000" required/></label><button className="primary-btn full-btn" type="submit">Simpan ke wishlist</button></form></Modal>}
   </div>;

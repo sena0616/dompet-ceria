@@ -16,7 +16,18 @@ const money = (value) => new Intl.NumberFormat("id-ID", {
 const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const today = () => ymd(new Date());
 const initialTransactions = [];
-const expenseCategories = ["Makanan & Minuman", "Belanja Online", "Transportasi", "Tagihan", "Hiburan", "Pendidikan", "Kesehatan", "Pembelian Impulsif", "Lainnya"];
+const expenseCategories = [
+  "Makanan & Minuman",
+  "Bahan Makanan",
+  "Persabunan",
+  "Skincare",
+  "Jajan",
+  "Barang Kos",
+  "Tagihan",
+  "Pendidikan",
+  "Make-up",
+  "Barang Lucu"
+];
 const incomeCategories = ["Uang Saku", "Gaji", "Bonus", "Usaha", "Investasi", "Lainnya"];
 const read = (key, fallback) => {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
@@ -40,7 +51,7 @@ function App() {
   const [notice, setNotice] = useState("");
   const [query, setQuery] = useState("");
   const [transactionForm, setTransactionForm] = useState({ name: "", amount: "", type: "expense", category: expenseCategories[0], date: today() });
-  const [reminderForm, setReminderForm] = useState({ name: "", amount: "", category: "Belanja Online" });
+  const [reminderForm, setReminderForm] = useState({ name: "", amount: "", category: expenseCategories[0] });
   const [wishForm, setWishForm] = useState({ name: "", amount: "" });
   const [deposit, setDeposit] = useState("");
   const [theme, setTheme] = useState(() => read("dc-theme", "dark"));
@@ -167,7 +178,7 @@ function App() {
     setNotice(affordable
       ? `🟡 Anggaran masih cukup. Simpan dulu ke wishlist dan pertimbangkan lagi besok.`
       : `🔴 Harga melebihi sisa anggaran ${money(Math.max(0,remaining))}. Sebaiknya tunda dulu.`);
-    setReminderForm({ name: "", amount: "", category: "Belanja Online" });
+    setReminderForm({ name: "", amount: "", category: expenseCategories[0] });
     setShowReminder(false);
   }
   function removeWish(id) {

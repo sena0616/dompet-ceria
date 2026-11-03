@@ -134,8 +134,11 @@ function App() {
           .filter(t => t.type === "expense")
           .reduce((sum, t) => sum + Number(t.amount), 0);
 
-    if (transactionForm.type === "expense" && amount > Math.max(0, availableBalance)) {
-      setNotice("Saldo tidak cukup! Saldo tersedia " + money(Math.max(0, availableBalance)) + ".");
+    const projectedBalance = availableBalance
+      + (transactionForm.type === "income" ? amount : -amount);
+
+    if (projectedBalance < 0) {
+      setNotice("Transaksi ditolak! Saldo tidak boleh menjadi minus. Saldo tersedia " + money(Math.max(0, availableBalance)) + ".");
       return;
     }
 
@@ -156,6 +159,18 @@ function App() {
     setShowTransaction(true);
   }
   function deleteTransaction(id) {
+    const transaction = transactions.find(t => t.id === id);
+    if (!transaction) return;
+
+    const balanceAfterDelete = transaction.type === "income"
+      ? balance - Number(transaction.amount)
+      : balance + Number(transaction.amount);
+
+    if (balanceAfterDelete < 0) {
+      setNotice("Pemasukan tidak bisa dihapus karena saldo akan menjadi minus.");
+      return;
+    }
+
     if (window.confirm("Hapus transaksi ini?")) {
       setTransactions(list => list.filter(t => t.id !== id));
       setNotice("Transaksi dihapus.");
@@ -272,6 +287,15 @@ function App() {
             setNotice("Saldo awal tidak boleh negatif.");
             return;
           }
+          const transactionNet = transactions.reduce((sum, t) => {
+            return sum + (t.type === "income" ? Number(t.amount) : -Number(t.amount));
+          }, 0);
+
+          if (value + transactionNet < 0) {
+            setNotice("Saldo awal tidak cukup untuk menutup pengeluaran yang sudah tercatat.");
+            return;
+          }
+
           setStartingBalance(value);
           setNotice("Saldo awal berhasil diperbarui! ✨");
         }}>
